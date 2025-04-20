@@ -17,7 +17,6 @@ width = COLS * SQUARESIZE
 height = (ROWS + 1) * SQUARESIZE
 
 
-pygame.init()
 
 board = np.zeros((ROWS,COLS))
 screen = pygame.display.set_mode((width,height))
@@ -25,11 +24,37 @@ clock = pygame.time.Clock()
 
 
 def drop_piece(board,col, piece):
-    for r in range(ROWS-1, 0, -1):
+    for r in range(ROWS-1, -1, -1):
         if board[r][col] == 0:
             board[r][col] = piece
-            break
+            return True
+    return False
 
+def winning_move(board, piece):
+	# Check horizontally
+	for c in range(COLS-3):
+		for r in range(ROWS):
+			if board[r][c] == piece and board[r][c+1] == piece and board[r][c+2] == piece and board[r][c+3] == piece:
+				return True
+
+	# Check vertically
+	for c in range(COLS):
+		for r in range(ROWS-3):
+			if board[r][c] == piece and board[r+1][c] == piece and board[r+2][c] == piece and board[r+3][c] == piece:
+				return True
+
+	# Check diagonally (positively sloped)
+	for c in range(COLS-3):
+		for r in range(ROWS-3):
+			if board[r][c] == piece and board[r+1][c+1] == piece and board[r+2][c+2] == piece and board[r+3][c+3] == piece:
+				return True
+
+	# Check diagonally (negatively sloped)
+	for c in range(COLS-3):
+		for r in range(3, ROWS):
+			if board[r][c] == piece and board[r-1][c+1] == piece and board[r-2][c+2] == piece and board[r-3][c+3] == piece:
+				return True
+        
 def draw_board(board):
     for c in range(COLS):
         for r in range(ROWS):
@@ -43,6 +68,8 @@ def draw_board(board):
 
     pygame.display.update()
 
+pygame.init()   
+myfont = pygame.font.SysFont("monospace", 75)
 draw_board(board)
 game_over = False
 turn = 0
@@ -59,5 +86,15 @@ while not game_over:
             col = int(posx // SQUARESIZE)
             drop_piece(board, col, piece)
             turn += 1
-            print(turn)
+            if winning_move(board, piece):
+                if piece == 1:
+                    label = myfont.render("Player 1 wins!", 1, RED)
+                else:
+                    label = myfont.render("Player 2 wins!", 1, YELLOW)
+                screen.blit(label, (40,10))
+                game_over = True
+            print(turn) 
             draw_board(board)
+
+#show the final board state before closing
+pygame.time.wait(3000)
