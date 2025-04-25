@@ -113,7 +113,7 @@ def evaluate_window(window, piece):
         # if window.count(piece) == 4:
         #     score += INF * multiplier
         if window.count(piece) == 3 and window.count(EMPTY) == 1:
-            score += 5 * multiplier
+            score += 8 * multiplier
         elif window.count(piece) == 2 and window.count(EMPTY) == 2:
             score += 2 * multiplier
         elif window.count(piece) == 1 and window.count(EMPTY) == 3:
@@ -145,14 +145,15 @@ def heuristic(board, piece):
             score += evaluate_window(window, piece)
 
     # Score positive sloped diagonal
-    for r in range(ROWS-3):
+    for r in range(ROWS-3, ROWS):
         for c in range(COLS-3):
-            window = [int(board[r+i][c+i]) for i in range(WINDOW_LENGTH)]
-            score += evaluate_window(window, piece)
+            window = [int(board[r-i][c+i]) for i in range(WINDOW_LENGTH)]
+            if len(window) == 4:
+                score += evaluate_window(window, piece)
 
     for r in range(ROWS-3):
         for c in range(COLS-3):
-            window = [int(board[r+3-i][c+i]) for i in range(WINDOW_LENGTH)]
+            window = [int(board[r+i][c+i]) for i in range(WINDOW_LENGTH)]
             score += evaluate_window(window, piece)
 
     return score
@@ -175,7 +176,6 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
             # print(board)
             # print("depth: ", depth)
             if winning_move(board, AI_PIECE):
-                print("yay")
                 return (None, INF)
             elif winning_move(board, PLAYER_PIECE):
                 return (None, -INF)
@@ -221,7 +221,6 @@ def play_game():
     turn = 0
 
     while not game_over:
-
         for event in pygame.event.get():
             player_piece = turn % 2 + 1
             if event.type == pygame.QUIT:
@@ -238,7 +237,7 @@ def play_game():
                         game_over = True
 
             else:
-                col, score = minimax(board, 4, -INF, INF, True)
+                col, score = minimax(board, 5, -INF, INF, True)
                 if (col == None):
                   print("No valid moves")
                 drop_piece(board, col, player_piece)
