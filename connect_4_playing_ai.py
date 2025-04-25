@@ -172,7 +172,6 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
         if is_terminal:
             print(board)
             print("depth: ", depth)
-            print("len", len(valid_locations))
             if winning_move(board, AI_PIECE):
                 return (None, INF)
             elif winning_move(board, PLAYER_PIECE):
