@@ -109,14 +109,16 @@ def evaluate_window(window, piece):
     opp_piece = PLAYER_PIECE if (piece == AI_PIECE) else AI_PIECE
     for p in [piece, opp_piece]:
         multiplier = 1 if p == piece else -1
-        if window.count(piece) == 4:
-            score += INF * multiplier
-        elif window.count(piece) == 3 and window.count(EMPTY) == 1:
+        #our current minimax function already checks this case
+        # if window.count(piece) == 4:
+        #     score += INF * multiplier
+        if window.count(piece) == 3 and window.count(EMPTY) == 1:
             score += 5 * multiplier
         elif window.count(piece) == 2 and window.count(EMPTY) == 2:
             score += 2 * multiplier
         elif window.count(piece) == 1 and window.count(EMPTY) == 3:
             score += 1 * multiplier
+            
     return score
 
 
@@ -142,7 +144,7 @@ def heuristic(board, piece):
             window = col_array[r:r+WINDOW_LENGTH]
             score += evaluate_window(window, piece)
 
-    # Score posiive sloped diagonal
+    # Score positive sloped diagonal
     for r in range(ROWS-3):
         for c in range(COLS-3):
             window = [int(board[r+i][c+i]) for i in range(WINDOW_LENGTH)]
@@ -170,9 +172,10 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
     is_terminal = is_terminal_node(board)
     if depth == 0 or is_terminal:
         if is_terminal:
-            print(board)
-            print("depth: ", depth)
+            # print(board)
+            # print("depth: ", depth)
             if winning_move(board, AI_PIECE):
+                print("yay")
                 return (None, INF)
             elif winning_move(board, PLAYER_PIECE):
                 return (None, -INF)
