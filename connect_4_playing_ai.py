@@ -112,13 +112,12 @@ def evaluate_window(window, piece):
         #our current minimax function already checks this case
         # if window.count(piece) == 4:
         #     score += INF * multiplier
-        if window.count(piece) == 3 and window.count(EMPTY) == 1:
+        if window.count(p) == 3 and window.count(EMPTY) == 1:
             score += 8 * multiplier
-        elif window.count(piece) == 2 and window.count(EMPTY) == 2:
+        elif window.count(p) == 2 and window.count(EMPTY) == 2:
             score += 2 * multiplier
-        elif window.count(piece) == 1 and window.count(EMPTY) == 3:
+        elif window.count(p) == 1 and window.count(EMPTY) == 3:
             score += 1 * multiplier
-            
     return score
 
 
@@ -128,7 +127,9 @@ def heuristic(board, piece):
     # Score center column
     center_array = [int(i) for i in list(board[:, COLS//2])]
     center_count = center_array.count(piece)
-    score += center_count * 3
+    score += center_count * 2
+    opp_count = center_array.count(PLAYER_PIECE)
+    score -= opp_count * 2
 
     # Score Horizontal
     for r in range(ROWS):
@@ -143,19 +144,19 @@ def heuristic(board, piece):
         for r in range(ROWS-3):
             window = col_array[r:r+WINDOW_LENGTH]
             score += evaluate_window(window, piece)
-
+            
     # Score positive sloped diagonal
     for r in range(ROWS-3, ROWS):
         for c in range(COLS-3):
             window = [int(board[r-i][c+i]) for i in range(WINDOW_LENGTH)]
-            if len(window) == 4:
-                score += evaluate_window(window, piece)
-
+            print("window",window)
+            print("w score",evaluate_window(window, piece))
+            score += evaluate_window(window, piece)
+            
     for r in range(ROWS-3):
         for c in range(COLS-3):
             window = [int(board[r+i][c+i]) for i in range(WINDOW_LENGTH)]
             score += evaluate_window(window, piece)
-
     return score
 
 # def heuristic(board, piece):
@@ -238,6 +239,7 @@ def play_game():
 
             else:
                 col, score = minimax(board, 5, -INF, INF, True)
+                print("score: ", score)
                 if (col == None):
                   print("No valid moves")
                 drop_piece(board, col, player_piece)
