@@ -80,7 +80,7 @@ def winning_move(board, player_piece):
                 return True
 
 
-PLAYER_PIECE = 1
+HUMAN_PIECE = 1
 AI_PIECE = 2
 EMPTY = 0
 WINDOW_LENGTH = 4
@@ -99,14 +99,14 @@ def is_valid_location(board, col):
 
 
 def is_terminal_node(board):
-    return (winning_move(board, PLAYER_PIECE)
+    return (winning_move(board, HUMAN_PIECE)
          or winning_move(board, AI_PIECE)
          or len(get_valid_locations(board)) == 0)
 
 
 def evaluate_window(window, piece):
     score = 0
-    opp_piece = PLAYER_PIECE if (piece == AI_PIECE) else AI_PIECE
+    opp_piece = HUMAN_PIECE if (piece == AI_PIECE) else AI_PIECE
     for p in [piece, opp_piece]:
         multiplier = 1 if p == piece else -1
         #our current minimax function already checks this case
@@ -118,17 +118,17 @@ def evaluate_window(window, piece):
             score += 2 * multiplier
         elif window.count(p) == 1 and window.count(EMPTY) == 3:
             score += 1 * multiplier
+            
     return score
 
 
 def heuristic(board, piece):
     score = 0
-
     # Score center column
     center_array = [int(i) for i in list(board[:, COLS//2])]
-    center_count = center_array.count(piece)
+    center_count = center_array.count(AI_PIECE)
     score += center_count * 2
-    opp_count = center_array.count(PLAYER_PIECE)
+    opp_count = center_array.count(HUMAN_PIECE)
     score -= opp_count * 2
 
     # Score Horizontal
@@ -149,8 +149,6 @@ def heuristic(board, piece):
     for r in range(ROWS-3, ROWS):
         for c in range(COLS-3):
             window = [int(board[r-i][c+i]) for i in range(WINDOW_LENGTH)]
-            print("window",window)
-            print("w score",evaluate_window(window, piece))
             score += evaluate_window(window, piece)
             
     for r in range(ROWS-3):
@@ -178,7 +176,7 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
             # print("depth: ", depth)
             if winning_move(board, AI_PIECE):
                 return (None, INF)
-            elif winning_move(board, PLAYER_PIECE):
+            elif winning_move(board, HUMAN_PIECE):
                 return (None, -INF)
             else:  # Game is over, no more valid moves
                 return (None, 0)
@@ -204,7 +202,7 @@ def minimax(board, depth, alpha, beta, maximizingPlayer):
         column = valid_locations[0]
         for col in valid_locations:
             b_copy = board.copy()
-            drop_piece(b_copy, col, PLAYER_PIECE)
+            drop_piece(b_copy, col, HUMAN_PIECE)
             _, new_score = minimax(b_copy, depth-1, alpha, beta, True)
             if new_score < score:
                 score = new_score
@@ -224,30 +222,37 @@ def play_game():
     while not game_over:
         for event in pygame.event.get():
             player_piece = turn % 2 + 1
+            color = RED if player_piece == 1 else YELLOW
             if event.type == pygame.QUIT:
                 sys.exit()
-            if player_piece == 1:
+            if player_piece == HUMAN_PIECE:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     posx = event.pos[0]
                     col = int(posx // SQUARESIZE)
                     drop_piece(board, col, player_piece)
                     turn += 1
                     if winning_move(board, player_piece):
-                        label = myfont.render("Player 1 wins!", 1, RED)
+                        label = myfont.render(f"Player {HUMAN_PIECE} wins!", 1, color)     
                         screen.blit(label, (40, 10))
                         game_over = True
 
-            else:
+            elif player_piece == AI_PIECE:
                 col, score = minimax(board, 5, -INF, INF, True)
                 print("score: ", score)
                 if (col == None):
                   print("No valid moves")
-                drop_piece(board, col, player_piece)
+                else:
+                    drop_piece(board, col, player_piece)
                 turn += 1
                 if winning_move(board, player_piece):
-                    label = myfont.render("Player 2 wins!", 1, YELLOW)                 
+                    label = myfont.render(f"Player {AI_PIECE} wins!", 1, color)     
                     screen.blit(label, (40,10))
                     game_over = True
+                    
+            if len(get_valid_locations(board)) == 0 and game_over == False:
+                label = myfont.render("It's a draw!", 1, color)     
+                screen.blit(label, (40,10))
+                game_over = True
                             
             # if winning_move(board, player_piece):
             #     if player_piece == 1:
